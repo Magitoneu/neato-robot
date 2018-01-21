@@ -70,7 +70,7 @@ class HttpViewer(object):
         sys.stdout = open('http_log.txt', 'w')
         self.thread = threading.Thread(target=self.main_http_server)
         self.thread.start()
-        
+
         self.thread_laser = threading.Thread(target=self.main_laser)
         self.thread_laser.start()
         
@@ -96,7 +96,7 @@ def write_points_json(points, mm_per_pixel, type, filename):
 
     json_string = '{\n "'+type+'": ['
     for point in points:
-	print("Point:", point)
+        print("Point:", point)
         json_string += point_to_json(point, mm_per_pixel) + ',\n'
     json_string = json_string[:-2]
     json_string += ']\n}'
@@ -106,6 +106,8 @@ def write_points_json(points, mm_per_pixel, type, filename):
 
 if __name__ == "__main__":
     """ Test program. """
+    print("TEST PROGRAM RUNNING -> NO VALID RESULTS!")
+
     def laser_test():
         laser_points = []
 
@@ -138,7 +140,4 @@ if __name__ == "__main__":
 
         n_laser += 360
         n_pose += 1
-
-
-
-
+        
