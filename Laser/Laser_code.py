@@ -29,8 +29,8 @@ class NeatoLaser:
 		return v2
 	def discretize(self):
 		self.discrete_values = []
+		self.laser_values = self.laser_values[341:359] + self.laser_values[0:340]
 		for i in range(10):
-			self.laser_values = self.laser_values[341:359] + self.laser_values[0:340]
 			rang = list(map(float,self.laser_values[self.angle_ini + self.step*i:self.angle_ini + self.step*(i+1)]))
 			vals = [float('Inf') if x == 0 else x for x in rang]
 			self.discrete_values.append(min(vals))
