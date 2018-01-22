@@ -1,4 +1,7 @@
+from test_NeatoCommands import envia
 from Laser_code import NeatoLaser
+from neatoRobot import NeatoRobot
+import serial
 import time
 
 
@@ -126,7 +129,8 @@ class NeatoRobot:
 		laser.enviaL(comando, 'command L R', 0.1)
 
 if __name__ == "__main__":
-	laser = NeatoLaser()
+	ser = serial.Serial(port='/dev/ttyACM0', baudrate=115200, timeout=0.05)
+	laser = NeatoLaser(ser)
 	laser.enable_laser(True)
 	time.sleep(1)
 	k = 0
@@ -143,5 +147,5 @@ if __name__ == "__main__":
 			time.sleep(2)
 			k = k + 1
 	except KeyboardInterrupt:
-		laser.enviaL("SetMotor LWheelDisable RWheelDisable", "stop", 0.2)
+		envia(ser, "SetMotor LWheelDisable RWheelDisable", 0.2)
 	laser.enable_laser(False)
