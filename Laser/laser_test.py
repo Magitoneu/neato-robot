@@ -63,33 +63,6 @@ class NeatoRobot:
 		#print(comando)
 		laser.enviaL(comando, 'command L R', 0.1)
 				
-	#Per a seguir un cami recte fa falta memoria (on es el nord per exemple)
-	#FER AMB ODOMETRIA
-	def straight_path(self, values, laser):
-		print("NORTH: ", self.north)
-		if values[0] < 650 :
-			self.theta = self.theta+3.141516/2
-		elif (values[1] < self.distance) or (values[9] < self.distance):
-			if(values[1] < self.distance):
-				self.theta = self.theta+3.141516/3
-			else:
-				self.theta = self.theta-3.141516/3
-		elif (values[8] < self.distance) or (values[2] < self.distance):
-			if(values[8] < self.distance):
-				self.theta = self.theta-3.141516/4
-			else:
-				self.theta = self.theta+3.141516/4
-		else:
-			self.theta = -self.north
-		print("THETA: ", self.theta)
-		distancia_R = (((self.speed * pow(-1, self.direction) ) + (self.S * self.theta)) * self.tiempo) * pow(-1, self.direction)
-		distancia_L = (((self.speed * pow(-1, self.direction) ) + (-self.S * self.theta)) * self.tiempo) * pow(-1, self.direction)
-		comando = 'SetMotor LWheelDist ' + str(distancia_L) + ' RWheelDist ' + str(distancia_R) + ' Speed ' + str(self.speed * pow(-1, self.direction))
-		laser.enviaL(comando, 'command L R', 0.1)
-		if(self.north != 0):
-			print(comando)
-		self.north = self.north + self.theta
-	
 	def followWal(self, values, laser):
 		print("front: ", values[0])
 		print("right: ", values[8])
@@ -129,8 +102,7 @@ class NeatoRobot:
 		laser.enviaL(comando, 'command L R', 0.1)
 
 if __name__ == "__main__":
-	ser = serial.Serial(port='/dev/ttyACM0', baudrate=115200, timeout=0.05)
-	laser = NeatoLaser(ser)
+	laser = NeatoLaser()
 	laser.enable_laser(True)
 	time.sleep(1)
 	k = 0
@@ -147,5 +119,5 @@ if __name__ == "__main__":
 			time.sleep(2)
 			k = k + 1
 	except KeyboardInterrupt:
-		envia(ser, "SetMotor LWheelDisable RWheelDisable", 0.2)
+		laser.enviaL("SetMotor LWheelDisable RWheelDisable","stop motor", 0.2)
 	laser.enable_laser(False)

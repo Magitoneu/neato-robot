@@ -11,6 +11,12 @@ class NeatoRobot:
     tiempo = 20
     S = 121.5
 
+    def __init__(self, ser):
+        self.ser = ser
+        envia('TestMode On', 0.2)
+		envia('PlaySound 1', 0.2)
+		envia("SetMotor LWheelEnable RWheelEnable", 0.2)
+
     #Just move without crash
     def random_path(self, values, laser):
         #print(values)
@@ -58,7 +64,7 @@ class NeatoRobot:
         distancia_L = (((self.speed * pow(-1, self.direction) ) + (-self.S * self.theta)) * self.tiempo) * pow(-1, self.direction)
         comando = 'SetMotor LWheelDist ' + str(distancia_L) + ' RWheelDist ' + str(distancia_R) + ' Speed ' + str(self.speed * pow(-1, self.direction))
         #print(comando)
-        laser.enviaL(comando, 'command L R', 0.1)
+        self.enviaR(comando, 0.1)
                 
     def followWal(self, values, laser):
         print("front: ", values[0])
@@ -80,7 +86,7 @@ class NeatoRobot:
         distancia_R = (((self.speed * pow(-1, self.direction) ) + (self.S * self.theta)) * self.tiempo) * pow(-1, self.direction)
         distancia_L = (((self.speed * pow(-1, self.direction) ) + (-self.S * self.theta)) * self.tiempo) * pow(-1, self.direction)
         comando = 'SetMotor LWheelDist ' + str(distancia_L) + ' RWheelDist ' + str(distancia_R) + ' Speed ' + str(self.speed * pow(-1, self.direction))
-        laser.enviaL(comando, 'command L R', 0.1)
+        self.enviaR(comando, 0.1)
 
     def gotoWall(self, values, laser):
         while(values[0] > 650):
@@ -88,7 +94,7 @@ class NeatoRobot:
             distancia_R = (((self.speed * pow(-1, self.direction) ) + (self.S * self.theta)) * self.tiempo) * pow(-1, self.direction)
             distancia_L = (((self.speed * pow(-1, self.direction) ) + (-self.S * self.theta)) * self.tiempo) * pow(-1, self.direction)
             comando = 'SetMotor LWheelDist ' + str(distancia_L) + ' RWheelDist ' + str(distancia_R) + ' Speed ' + str(self.speed * pow(-1, self.direction))
-            laser.enviaL(comando, 'command L R', 0.1)
+            self.enviaR(comando, 0.1)
             values = laser.get_laser()
         print("Wall reached")
         values = laser.get_laser()
@@ -96,4 +102,8 @@ class NeatoRobot:
         distancia_R = (((self.speed * pow(-1, self.direction) ) + (self.S * self.theta)) * self.tiempo) * pow(-1, self.direction)
         distancia_L = (((self.speed * pow(-1, self.direction) ) + (-self.S * self.theta)) * self.tiempo) * pow(-1, self.direction)
         comando = 'SetMotor LWheelDist ' + str(distancia_L) + ' RWheelDist ' + str(distancia_R) + ' Speed ' + str(self.speed * pow(-1, self.direction))
-        laser.enviaL(comando, 'command L R', 0.1)
+        self.enviaR(comando, 0.1)
+
+    def enviaR(self, msg, t):
+        buffer = envia(self.ser, msg, t)
+        return buffer
