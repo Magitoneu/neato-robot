@@ -7,20 +7,17 @@ class NeatoLaser:
 	angle_ini = 0
 	step = 36
 	
-	def __init__(self):
+	def __init__(self, ser):
 		#self.laser_mutex = threading.Lock()
-		self.ser = serial.Serial(port='/dev/ttyACM0', baudrate=115200, timeout=0.05)
-		self.enviaL('TestMode On', "Testmode", 0.2)
-		self.enviaL('PlaySound 1', "Play sound", 0.2)
-		self.enviaL("SetMotor LWheelEnable RWheelEnable", "GO", 0.2)
-		self.enviaL('SetLDSRotation On', 'z', 4)
+		self.ser = ser
+		envia(self.ser, 'SetLDSRotation On', 4)
 		
 	def enable_laser(self, b):
 			""" Activates or deactivates the laser depending on whether the value of b is True or False. """
 			if b == True:
-				msg = self.enviaL('SetLDSRotation On',"Enable laser", 4)
+				msg = envia(self.ser, 'SetLDSRotation On', 4)
 			else:
-				msg = self.enviaL('SetLDSRotation Off', "Disable Laser", 2)
+				msg = envia(self.ser, 'SetLDSRotation Off', 2)
 			print msg
 			
 	def laser_row(self, v1, v2, v3, v4):
@@ -45,7 +42,7 @@ class NeatoLaser:
 		
 	def get_laser(self):
 			""" Ask to the robot for the current values of the laser. """
-			msg = self.enviaL('GetLDSScan', "GetLDSScan", 0.2)
+			msg = envia(self.ser, "GetLDSScan", 0.2)
 			self.laser_values = []
 			for line in msg.splitlines():	
 				s = line.split(',')
@@ -54,11 +51,6 @@ class NeatoLaser:
 					lr = self.laser_row(s[0], s[1], s[2], s[3])
 					self.laser_values.append(lr)
 			#print(self.laser_values)
-			
 			self.discretize()
 			#self.laser_mutex.release()
 			return self.discrete_values
-	def enviaL(self, msg, text, t):
-		print(text)
-		buffer = envia(self.ser, msg, t)
-		return buffer
