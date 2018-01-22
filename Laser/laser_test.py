@@ -18,28 +18,45 @@ class NeatoRobot:
 	S = 121.5
 	
 	#Just move without crash
-	def random_path(self, values, laser):
-		if values[0] < 650 :
-			self.theta = self.theta+3.141516/2
-		elif (values[1] < self.distance) or (values[9] < self.distance):
-			if(values[1] < self.distance):
-				self.theta = self.theta+3.141516/3
-			else:
-				self.theta = self.theta-3.141516/3
-		elif (values[8] < self.distance) or (values[2] < self.distance):
-			if(values[8] < self.distance):
-				self.theta = self.theta-3.141516/4
-			else:
-				self.theta = self.theta+3.141516/4
-		else:
-			self.theta = 0
-		distancia_R = (((self.speed * pow(-1, self.direction) ) + (self.S * self.theta)) * self.tiempo) * pow(-1, self.direction)
-		distancia_L = (((self.speed * pow(-1, self.direction) ) + (-self.S * self.theta)) * self.tiempo) * pow(-1, self.direction)
-		laser.enviaL("SetMotor LWheelEnable RWheelEnable", "go", 0.1)
-		comando = 'SetMotor LWheelDist ' + str(distancia_L) + ' RWheelDist ' + str(distancia_R) + ' Speed ' + str(self.speed * pow(-1, self.direction))
-		print(comando)
+    def random_path(self, values, laser):
+        print(values)
+        if values[0] < 650:
+            auxvals = [values[1] + values[2], values[8] + values[9]]
+            idx = auxvals.index(max(auxvals)) #Agafar el valor maxim
+            if idx == 0:  #Girar a l'esquerre
+                self.theta = self.theta+3.141516/2
+            else:
+                self.theta = self.theta-3.141516/2
+        elif (values[1] < self.distance) or (values[9] < self.distance):
+            if (values[1] < self.distance) and (values[9] < self.distance):
+                if values[9] < values[1]:
+                    self.theta = self.theta+3.141516/4
+                else:
+                    self.theta = self.theta-3.141516/4				
+            elif(values[1] < self.distance):
+                self.theta = self.theta-3.141516/3
+            else:
+                self.theta = self.theta+3.141516/3
+        elif (values[8] < self.distance) or (values[2] < self.distance):
+            if (values[8] < self.distance) and (values[2] < self.distance):
+                if values[8] < values[2]:
+                    self.theta = self.theta+3.141516/4
+                else:
+                    self.theta = self.theta-3.141516/4
+            elif(values[8] < self.distance):
+                self.theta = self.theta+3.141516/4
+            else:
+                self.theta = self.theta-3.141516/4
+        else:
+            self.theta = 0
+        #print("Front: ", values[0], " OuterLeft: ", values[2], " OuterRight: ", values[8], " CenterLeft: ", values[1], " CenterRight: ", values[9])
+        #print("Theta: ", self.theta)
+        distancia_R = (((self.speed * pow(-1, self.direction) ) + (self.S * self.theta)) * self.tiempo) * pow(-1, self.direction)
+        distancia_L = (((self.speed * pow(-1, self.direction) ) + (-self.S * self.theta)) * self.tiempo) * pow(-1, self.direction)
+        comando = 'SetMotor LWheelDist ' + str(distancia_L) + ' RWheelDist ' + str(distancia_R) + ' Speed ' + str(self.speed * pow(-1, self.direction))
+        #print(comando)
 		laser.enviaL(comando, 'command L R', 0.1)
-		
+				
 	#Per a seguir un cami recte fa falta memoria (on es el nord per exemple)
 	#FER AMB ODOMETRIA
 	def straight_path(self, values, laser):
