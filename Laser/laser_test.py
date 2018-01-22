@@ -1,6 +1,7 @@
 from test_NeatoCommands import envia
 from Laser_code import NeatoLaser
 from neatoRobot import NeatoRobot
+import serial
 import time
 import math
 #Ranges:
@@ -23,11 +24,12 @@ if __name__ == "__main__":
 	laser.enable_laser(True)
 	time.sleep(1)
 	robot = NeatoRobot(ser)
-	envia("SetMotor LWheelEnable RWheelEnable", "go", 0.1)
+	envia(ser, "SetMotor LWheelEnable RWheelEnable", 0.1)
 	try:
 		while True:
 			values = laser.get_laser()
 			robot.random_path(values, laser)
+			time.sleep(0.1)
 	except KeyboardInterrupt:
 		envia(ser, "SetMotor LWheelDisable RWheelDisable", 0.2)
 	laser.enable_laser(False)

@@ -1,5 +1,4 @@
 from test_NeatoCommands import envia
-import serial
 import time
 import numpy as np
 
@@ -8,7 +7,6 @@ class NeatoLaser:
 	step = 36
 	
 	def __init__(self, ser):
-		#self.laser_mutex = threading.Lock()
 		self.ser = ser
 		envia(self.ser, 'SetLDSRotation On', 4)
 		
@@ -43,6 +41,7 @@ class NeatoLaser:
 	def get_laser(self):
 			""" Ask to the robot for the current values of the laser. """
 			msg = envia(self.ser, "GetLDSScan", 0.2)
+			print(msg)
 			self.laser_values = []
 			for line in msg.splitlines():	
 				s = line.split(',')
