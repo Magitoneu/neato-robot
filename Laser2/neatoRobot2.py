@@ -6,7 +6,7 @@ import math
 
 class NeatoRobot:
     north = 0
-    distance = 600
+    distance = 430
     speed = 120
     direction = 0 #0 fordward, 1 backward
     theta = 0
@@ -70,7 +70,7 @@ class NeatoRobot:
         dist_28 = 300
         #print(values)
         values = self.laser.get_laser()
-        if values[0] < 750:
+        if values[0] < 620:
             auxvals = [values[1] + values[2], values[8] + values[9]]
             idx = auxvals.index(max(auxvals)) #Agafar el valor maxim
             if idx == 0:  #Girar a l'esquerre

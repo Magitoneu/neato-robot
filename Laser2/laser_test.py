@@ -11,10 +11,8 @@ if __name__ == "__main__":
 	robot.enviaR("SetMotor LWheelEnable RWheelEnable", 0.2)
 	#envia(ser, 'SetLDSRotation On', 4)
 	k = 0
-	try:
-		#robot.random_path()
-		robot.gotoWall()
-		robot.followWal()
+	try:	
+		robot.GotoObstacles(5000,0)
 	except KeyboardInterrupt:
 		robot.enviaR("SetMotor LWheelDisable RWheelDisable", 0.2)
 		robot.enviaR("SetLDSRotation Off", 1)
