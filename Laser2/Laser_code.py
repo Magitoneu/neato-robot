@@ -70,6 +70,6 @@ class NeatoLaser:
         #self.laser_mutex.release()
         return self.discrete_values
 
-    def __val_to_coord(val, index):
+    def __val_to_coord(self, val, index):
         angle = (index/360.0) * 2*math.pi;
         return (val * math.cos(angle), val * math.sin(angle))
