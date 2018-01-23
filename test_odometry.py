@@ -17,6 +17,9 @@ def get_motors():
     R = int(msg[8].split(',')[1])
     
     return (L, R)
+    
+def gotoPoint(xpos, ypos):
+    
 
                 
 def odometry(L, R):
