@@ -66,27 +66,42 @@ class NeatoRobot:
         #print(comando)
         self.enviaR(comando, 0.1)
                 
-    def followWal(self, values, laser):
+    def followWal(self, values, laser, b0, b1, b2, b3):
         print("front: ", values[0])
         print("right: ", values[8])
-        if values[0] < 500:
-            self.theta = self.theta + 3.141516/3
-            print("turn left")
-        elif values[8] > 400:
-            self.theta = self.theta - 3.141516/6
-            print("turn right")
-        elif values[8] > 650:
-            self.theta = self.theta - 3.141516/3
-            print("turn right")
-        elif values[8] < 300:
+        print("front right :", values[9])
+        if values[0] < 440 and not b0:
             self.theta = self.theta + 3.141516/6
-            print("turn left")
+            b0 = True
+            b1 = False
+            b2 = False
+            b3 = False
+            print("FRONT")
+        elif (values[8] > 300 or values[9] > 300) and not b1:
+            b1 = True
+            b0 = False
+            b2 = False
+            b3 = False
+            self.theta = self.theta - 3.141516/12
+            print("Turn right")
+        elif (values[8] < 300 or values[9] < 300) and not b3:
+            b3 = True
+            b1 = False
+            b2 = False
+            b0 = False
+            self.theta = self.theta + 3.141516/12
+            print("Turn left")
         else:
+            b0 = False
+            b1 = False
+            b2 = False
+            b3 = False
             self.theta = 0
         distancia_R = (((self.speed * pow(-1, self.direction) ) + (self.S * self.theta)) * self.tiempo) * pow(-1, self.direction)
         distancia_L = (((self.speed * pow(-1, self.direction) ) + (-self.S * self.theta)) * self.tiempo) * pow(-1, self.direction)
         comando = 'SetMotor LWheelDist ' + str(distancia_L) + ' RWheelDist ' + str(distancia_R) + ' Speed ' + str(self.speed * pow(-1, self.direction))
         self.enviaR(comando, 0.1)
+        return(b0,b1,b2,b3)
 
     def gotoWall(self, values, laser):
         while(values[0] > 650):
