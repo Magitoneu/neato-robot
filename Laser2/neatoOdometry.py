@@ -40,10 +40,10 @@ class NeatoOdometry:
         self.X[2][0] = self.X[2][0] + theta_k
         self.sum_theta = (self.sum_theta + theta_k)
         
-        if self.sum_theta > (2*math.pi):
+        if self.sum_theta > (math.pi):
             self.sum_theta = self.sum_theta - (2*math.pi)
             
-        if (self.sum_theta < -(2*math.pi)):
+        if (self.sum_theta < -(math.pi)):
             self.sum_theta = self.sum_theta + (2*math.pi)
         
         self.P_k = np.add(np.dot(np.dot(self.Fx, self.P_k), np.transpose(self.Fx)), np.dot(np.dot(self.Fv, self.V), np.transpose(self.Fv)))
@@ -64,7 +64,7 @@ class NeatoOdometry:
         print("Where to go: ", [xpos, ypos])
         
         distance = math.sqrt(math.pow(xpos, 2.0) + math.pow(ypos, 2.0))
-        angle = math.atan2(ypos, xpos) - self.sum_theta
+        angle = self.__angle_diff(math.atan2(ypos, xpos), self.sum_theta)
         time = 0.75
         
         print("Distance: ", distance)
@@ -80,4 +80,7 @@ class NeatoOdometry:
         distancia_L = ((self.speed + (-self.S * angle)) * time)
         
         return int(round(distancia_L)), int(round(distancia_R))
+        
+    def __angle_diff(self, a, b):
+        return math.atan2(math.sin(a-b), math.cos(a-b))
         

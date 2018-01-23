@@ -5,6 +5,8 @@ from multiprocessing import Process, Queue
 import threading
 import time
 import math
+import http_viewer
+
 
 class NeatoRobot:
     north = 0
@@ -26,14 +28,23 @@ class NeatoRobot:
         self.pose_queue = Queue()
         self.laser_queue = Queue()
         
-        self.viewer = http_viewer.HttpViewer(8000, self.pose_queue, self.laser_queue)
+        self.viewer = http_viewer.HttpViewer(8004, self.laser_queue, self.pose_queue)
         
         L_read, R_read = self.__get_motors()
         self.odometry = NeatoOdometry(L_read, R_read)
         
+        self.thread_odometry = threading.Thread(target=self.__odometry_queue)
+        self.thread_odometry.start()
+        
     def __odometry_queue(self):
+        while True:
+            current_odometry = self.odometry.getTheoricPose()
+            self.pose_queue.put([(current_odometry[0][0], current_odometry[1][0])])
+            time.sleep(0.5)
+            
+    def __send_lasercoords(self, lasercoords):
         current_odometry = self.odometry.getTheoricPose()
-        self.pose_queue.put([(current_odometry[0][0], current_odometry[1][0])])
+        laser_queue.put((x[0] + current_odometry[0][0], x[1] + current_odometry[1][0]) for x in lasercoords)
         
     def Goto(self, x, y):
         L, R = self.odometry.getGoToPoint(x, y)
@@ -55,9 +66,6 @@ class NeatoRobot:
             if not self.__esquiva():
                 comando = 'SetMotor LWheelDist ' + str(L) + ' RWheelDist ' + str(R) + ' Speed ' + str(self.speed)
                 self.enviaR(comando, 0.1)
-                print("Commands ODOMETRY")
-            else:
-                print("ESQUIVA")
 
             L_read, R_read = self.__get_motors()
             self.odometry.updateOdometry(L_read, R_read)
@@ -79,6 +87,7 @@ class NeatoRobot:
         dist_28 = 300
         #print(values)
         values = self.laser.get_laser()
+        self.__send_lasercoords(self.laser.get_last_laser_coords())
         if values[0] < 750:
             auxvals = [values[1] + values[2], values[8] + values[9]]
             idx = auxvals.index(max(auxvals)) #Agafar el valor maxim
@@ -275,7 +284,8 @@ class NeatoRobot:
         return buffer
         
     def stop(self):
+        self.thread_odometry.join()
         comando = 'SetMotor LWheelDist 0 RWheelDist 0 Speed 0'
         self.enviaR(comando, 0.1)
-        self.laser.enable(False)
+        self.laser.enable_laser(False)
         self.viewer.quit()
