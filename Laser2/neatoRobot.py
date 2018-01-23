@@ -13,9 +13,9 @@ class NeatoRobot:
 
     def __init__(self, ser):
         self.ser = ser
-        envia('TestMode On', 0.2)
-		envia('PlaySound 1', 0.2)
-		envia("SetMotor LWheelEnable RWheelEnable", 0.2)
+        envia(self.ser, 'TestMode On', 0.2)
+        envia(self.ser, 'PlaySound 1', 0.2)
+        envia(self.ser, "SetMotor LWheelEnable RWheelEnable", 0.2)
 
     #Just move without crash
     def random_path(self, values, laser):

@@ -10,7 +10,7 @@ class NeatoLaser:
 	def __init__(self, ser):
 		#self.laser_mutex = threading.Lock()
 		self.ser = ser
-		envia(self.ser, 'SetLDSRotation On', 'z', 4)
+		envia(self.ser, 'SetLDSRotation On', 4)
 		
 	def enable_laser(self, b):
 			""" Activates or deactivates the laser depending on whether the value of b is True or False. """
