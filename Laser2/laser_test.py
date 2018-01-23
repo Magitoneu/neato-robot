@@ -1,5 +1,5 @@
 from Laser_code import NeatoLaser
-from neatoRobot2 import NeatoRobot
+from neatoRobot import NeatoRobot
 from test_NeatoCommands import envia
 import serial
 import time

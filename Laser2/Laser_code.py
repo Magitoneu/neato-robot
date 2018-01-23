@@ -2,6 +2,7 @@ from test_NeatoCommands import envia
 import serial
 import time
 import numpy as np
+import math
 
 class NeatoLaser:
     angle_ini = 0
@@ -71,5 +72,5 @@ class NeatoLaser:
         return self.discrete_values
 
     def __val_to_coord(self, val, index):
-        angle = (index/360.0) * 2*math.pi;
+        angle = (index/360.0) * 2*math.pi
         return (val * math.cos(angle), val * math.sin(angle))

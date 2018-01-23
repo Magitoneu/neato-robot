@@ -18,7 +18,7 @@ class NeatoOdometry:
         new_L, new_R = L - self.L_ini, R - self.R_ini
         d_k = (new_L+new_R)/2.0
         theta_k = (new_R-new_L)/243.0
-        vk = [self.V[0][0], self.V[1][1]];
+        vk = [self.V[0][0], self.V[1][1]]
         
         self.Fx[0][0], self.Fx[0][1], self.Fx[0][2] = 1.0, 0.0, -(d_k * math.sin(self.sum_theta + theta_k))
         self.Fx[1][0], self.Fx[1][1], self.Fx[1][2] = 0.0, 1.0, (d_k * math.cos(self.sum_theta + theta_k))
@@ -58,8 +58,8 @@ class NeatoOdometry:
         return self.X_k
         
     def getGoToPoint(self, xpos, ypos):
-        xpos = xpos - self.X[0][0];
-        ypos = ypos - self.X[1][0];
+        xpos = xpos - self.X[0][0]
+        ypos = ypos - self.X[1][0]
         
         print("Where to go: ", [xpos, ypos])
         
