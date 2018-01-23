@@ -1,11 +1,12 @@
 from test_NeatoCommands import envia
 from neatoOdometry import NeatoOdometry
+from Laser_code import NeatoLaser
 import time
 import math
 
 class NeatoRobot:
     north = 0
-    distance = 400
+    distance = 600
     speed = 120
     direction = 0 #0 fordward, 1 backward
     theta = 0
@@ -17,6 +18,8 @@ class NeatoRobot:
         envia(self.ser, 'TestMode On', 0.2)
         envia(self.ser, 'PlaySound 1', 0.2)
         envia(self.ser, "SetMotor LWheelEnable RWheelEnable", 0.2)
+        envia(self.ser, 'SetLDSRotation On', 4)
+        self.laser = NeatoLaser(ser)
         
         L_read, R_read = self.__get_motors()
         self.odometry = NeatoOdometry(L_read, R_read)
@@ -26,14 +29,32 @@ class NeatoRobot:
         
         while (L+R) > 0:
             comando = 'SetMotor LWheelDist ' + str(L) + ' RWheelDist ' + str(R) + ' Speed ' + str(self.speed)
-            self.enviaR(comando, 0.2)
+            self.enviaR(comando, 0.1)
             L_read, R_read = self.__get_motors()
             self.odometry.updateOdometry(L_read, R_read)
             L, R = self.odometry.getGoToPoint(x, y)
             
         comando = 'SetMotor LWheelDist 0 RWheelDist 0 Speed 0'
-        self.enviaR(comando, 0.2)
+        self.enviaR(comando, 0.1)
         
+    def GotoObstacles(self, x, y):
+        L, R = self.odometry.getGoToPoint(x, y)
+        
+        while ((L+R) > 0):
+            if not self.__esquiva():
+                comando = 'SetMotor LWheelDist ' + str(L) + ' RWheelDist ' + str(R) + ' Speed ' + str(self.speed)
+                self.enviaR(comando, 0.1)
+                print("Commands ODOMETRY")
+            else:
+                print("ESQUIVA")
+
+            L_read, R_read = self.__get_motors()
+            self.odometry.updateOdometry(L_read, R_read)
+            L, R = self.odometry.getGoToPoint(x, y)
+            
+        comando = 'SetMotor LWheelDist 0 RWheelDist 0 Speed 0'
+        self.enviaR(comando, 0.1)   
+     
     def __get_motors(self):
         msg = self.enviaR('GetMotors LeftWheel RightWheel', 0.1).split('\n')
                 
@@ -41,6 +62,63 @@ class NeatoRobot:
         R = int(msg[8].split(',')[1])
         
         return (L, R)
+        
+        #Just move without crash
+    def __esquiva(self):
+        dist_28 = 300
+        #print(values)
+        values = self.laser.get_laser()
+        if values[0] < 750:
+            auxvals = [values[1] + values[2], values[8] + values[9]]
+            idx = auxvals.index(max(auxvals)) #Agafar el valor maxim
+            if idx == 0:  #Girar a l'esquerre
+                self.theta = self.theta+3.141516/4
+                print("Turn left")
+            else:
+                self.theta = self.theta-3.141516/4
+                print("Turn right")
+            esq = True
+        elif (values[1] < self.distance) or (values[9] < self.distance):
+            if (values[1] < self.distance) and (values[9] < self.distance):
+                if values[9] < values[1]:
+                    self.theta = self.theta+3.141516/10
+                    print("Turn left")
+                else:
+                    self.theta = self.theta-3.141516/10
+                    print("Turn right")                
+            elif(values[1] < self.distance):
+                self.theta = self.theta-3.141516/10
+                print("Turn right")
+            else:
+                self.theta = self.theta+3.141516/10
+            esq = True
+        elif (values[8] < dist_28) or (values[2] < dist_28):
+            if (values[8] < dist_28) and (values[2] < dist_28):
+                if values[8] < values[2]:
+                    self.theta = self.theta+3.141516/10
+                    print("Turn left")
+                else:
+                    self.theta = self.theta-3.141516/10
+                    print("Turn right")
+            elif(values[8] < dist_28):
+                self.theta = self.theta+3.141516/10
+                print("Turn left")
+            else:
+                self.theta = self.theta-3.141516/10
+                print("Turn right")
+            esq = True
+        else:
+            self.theta = 0
+            esq = False
+        print("Front: ", values[0], " OuterLeft: ", values[2], " OuterRight: ", values[8], " CenterLeft: ", values[1], " CenterRight: ", values[9])
+        print("Theta: ", self.theta)
+        if(esq):
+            distancia_R = (((self.speed * pow(-1, self.direction) ) + (self.S * self.theta)) * self.tiempo) * pow(-1, self.direction)
+            distancia_L = (((self.speed * pow(-1, self.direction) ) + (-self.S * self.theta)) * self.tiempo) * pow(-1, self.direction)
+            comando = 'SetMotor LWheelDist ' + str(distancia_L) + ' RWheelDist ' + str(distancia_R) + ' Speed ' + str(self.speed * pow(-1, self.direction))
+            #print(comando)
+            self.enviaR(comando, 0.4)
+        return(esq)
     
     #Just move without crash
     def random_path(self, values, laser):

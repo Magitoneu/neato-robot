@@ -38,7 +38,13 @@ class NeatoOdometry:
         self.X[0][0] = self.X[0][0] + d_k * math.cos(self.sum_theta + theta_k)
         self.X[1][0] = self.X[1][0] + d_k * math.sin(self.sum_theta + theta_k)
         self.X[2][0] = self.X[2][0] + theta_k
-        self.sum_theta = (self.sum_theta + theta_k)%(2*math.pi)
+        self.sum_theta = (self.sum_theta + theta_k)
+        
+        if self.sum_theta > (2*math.pi):
+            self.sum_theta = self.sum_theta - (2*math.pi)
+            
+        if (self.sum_theta < -(2*math.pi)):
+            self.sum_theta = self.sum_theta + (2*math.pi)
         
         self.P_k = np.add(np.dot(np.dot(self.Fx, self.P_k), np.transpose(self.Fx)), np.dot(np.dot(self.Fv, self.V), np.transpose(self.Fv)))
 
@@ -59,7 +65,7 @@ class NeatoOdometry:
         
         distance = math.sqrt(math.pow(xpos, 2.0) + math.pow(ypos, 2.0))
         angle = math.atan2(ypos, xpos) - self.sum_theta
-        time = 0.5
+        time = 0.75
         
         print("Distance: ", distance)
         print("Angle: ", angle)
