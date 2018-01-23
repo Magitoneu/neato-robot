@@ -104,6 +104,7 @@ class NeatoRobot:
         return(b0,b1,b2,b3)
 
     def gotoWall(self, values, laser):
+        print("Going to wall")
         while(values[0] > 650):
             self.theta = 0
             distancia_R = (((self.speed * pow(-1, self.direction) ) + (self.S * self.theta)) * self.tiempo) * pow(-1, self.direction)

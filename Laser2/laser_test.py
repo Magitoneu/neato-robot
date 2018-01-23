@@ -1,5 +1,5 @@
 from Laser_code import NeatoLaser
-from neatoRobot import NeatoRobot
+from neatoRobot2 import NeatoRobot
 from test_NeatoCommands import envia
 import serial
 import time
@@ -7,11 +7,11 @@ import time
 if __name__ == "__main__":
 	ser = serial.Serial(port='/dev/ttyACM0', baudrate=115200, timeout=0.05)
 	laser = NeatoLaser(ser)
-	laser.enable_laser(True)
+	#laser.enable_laser(True)
 	time.sleep(1)
 	robot = NeatoRobot(ser)
 	robot.enviaR("SetMotor LWheelEnable RWheelEnable", 0.2)
-	envia(ser, 'SetLDSRotation On', 4)
+	#envia(ser, 'SetLDSRotation On', 4)
 	k = 0
 	b0 = False
 	b1 = False
