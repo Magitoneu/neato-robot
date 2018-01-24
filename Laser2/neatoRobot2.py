@@ -27,7 +27,7 @@ class NeatoRobot:
         self.pose_queue = Queue()
         self.laser_queue = Queue()
         
-        self.viewer = http_viewer.HttpViewer(8006, self.laser_queue, self.pose_queue)
+        self.viewer = http_viewer.HttpViewer(8103, self.laser_queue, self.pose_queue)
         
         L_read, R_read = self.__get_motors()
         self.odometry = NeatoOdometry(L_read, R_read)
@@ -43,7 +43,10 @@ class NeatoRobot:
             
     def __send_lasercoords(self, lasercoords):
         current_odometry = self.odometry.getTheoricPose()
-        self.laser_queue.put((x[0] + current_odometry[0][0], x[1] + current_odometry[1][0]) for x in lasercoords)
+        coords_real = []
+        for i in range(len(lasercoords)):
+            coords_real.append(self.__val_to_coord(lasercoords[i], i, current_odometry))
+        self.laser_queue.put(coords_real)
         
     def Goto(self, x, y):
         print("Going to point")
@@ -279,3 +282,8 @@ class NeatoRobot:
         self.enviaR(comando, 0.1)
         self.laser.enable_laser(False)
         self.viewer.quit()
+        
+    def __val_to_coord(self, val, index, odo):
+        angle = ((index/360.0) * 2*math.pi) + odo[2][0]
+        point = ((val * math.cos(angle)) + odo[0][0], (val * math.sin(angle)) + odo[1][0])
+        return point

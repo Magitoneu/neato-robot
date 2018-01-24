@@ -30,7 +30,7 @@ class NeatoLaser:
     def discretize(self):
         self.laser_coords = []
         for i in range(len(self.laser_values)):
-            self.laser_coords.append(self.__val_to_coord(float(self.laser_values[i]), i))
+            self.laser_coords.append(float(self.laser_values[i]))
     
         self.discrete_values = []
         self.laser_values = self.laser_values[341:359] + self.laser_values[0:340]
@@ -70,7 +70,3 @@ class NeatoLaser:
         self.discretize()
         #self.laser_mutex.release()
         return self.discrete_values
-
-    def __val_to_coord(self, val, index):
-        angle = (index/360.0) * 2*math.pi
-        return (val * math.cos(angle), val * math.sin(angle))

@@ -1,4 +1,4 @@
-from neatoRobot import NeatoRobot
+from neatoRobot2 import NeatoRobot
 from test_NeatoCommands import envia
 import serial
 import time
@@ -11,7 +11,7 @@ if __name__ == "__main__":
     robot = NeatoRobot(ser)
 
     try:
-        robot.Goto(int(sys.argv[1]), int(sys.argv[2]))
+        robot.GotoObstacles(int(sys.argv[1]), int(sys.argv[2]))
     except KeyboardInterrupt:
         robot.enviaR("SetMotor LWheelDisable RWheelDisable", 0.2)
         robot.enviaR('SetLDSRotation Off', 1)
