@@ -30,7 +30,7 @@ class NeatoLaser:
     def discretize(self):
         self.laser_coords = []
         for i in range(len(self.laser_values)):
-            self.laser_coords.append(self.__val_to_coord(self.laser_values[i], i))
+            self.laser_coords.append(self.__val_to_coord(float(self.laser_values[i]), i))
     
         self.discrete_values = []
         self.laser_values = self.laser_values[341:359] + self.laser_values[0:340]

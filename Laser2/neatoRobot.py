@@ -9,7 +9,7 @@ import http_viewer
 
 class NeatoRobot:
     north = 0
-    distance = 430
+    distance = 540
     speed = 120
     direction = 0 #0 fordward, 1 backward
     theta = 0
@@ -43,7 +43,7 @@ class NeatoRobot:
             
     def __send_lasercoords(self, lasercoords):
         current_odometry = self.odometry.getTheoricPose()
-        laser_queue.put((x[0] + current_odometry[0][0], x[1] + current_odometry[1][0]) for x in lasercoords)
+        self.laser_queue.put((x[0] + current_odometry[0][0], x[1] + current_odometry[1][0]) for x in lasercoords)
         
     def Goto(self, x, y):
         print("Going to point")
@@ -85,11 +85,11 @@ class NeatoRobot:
         
         #Just move without crash
     def __esquiva(self):
-        dist_28 = 300
+        dist_28 = 350
         #print(values)
         values = self.laser.get_laser()
         self.__send_lasercoords(self.laser.get_last_laser_coords())
-        if values[0] < 620:
+        if values[0] < 650:
             auxvals = [values[1] + values[2], values[8] + values[9]]
             idx = auxvals.index(max(auxvals)) #Agafar el valor maxim
             if idx == 0:  #Girar a l'esquerre
