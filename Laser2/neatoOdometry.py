@@ -67,11 +67,11 @@ class NeatoOdometry:
         angle = self.__angle_diff(math.atan2(ypos, xpos), self.sum_theta)
         time = 0.75
         
-        print("Distance: ", distance)
-        print("Angle: ", angle)
-        print("Atan2: ", math.atan2(ypos, xpos))
-        print("Suma_theta: ", self.sum_theta)
-        print("Time: ", time)
+        # print("Distance: ", distance)
+        # print("Angle: ", angle)
+        # print("Atan2: ", math.atan2(ypos, xpos))
+        # print("Suma_theta: ", self.sum_theta)
+        # print("Time: ", time)
         
         if (distance < 50):
             return 0, 0
@@ -79,7 +79,7 @@ class NeatoOdometry:
         distancia_R = ((self.speed + (self.S * angle)) * time)
         distancia_L = ((self.speed + (-self.S * angle)) * time)
         
-        return int(round(distancia_L)), int(round(distancia_R))
+        return int(round(distancia_L)), int(round(distancia_R)), angle
         
     def __angle_diff(self, a, b):
         return math.atan2(math.sin(a-b), math.cos(a-b))

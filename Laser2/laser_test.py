@@ -12,7 +12,7 @@ if __name__ == "__main__":
 	#envia(ser, 'SetLDSRotation On', 4)
 	k = 0
 	try:	
-		robot.GotoObstacles(3500,0)
+		robot.exitMaze(-4000, 0)
 	except KeyboardInterrupt:
 		robot.enviaR("SetMotor LWheelDisable RWheelDisable", 0.2)
 		robot.enviaR("SetLDSRotation Off", 1)
