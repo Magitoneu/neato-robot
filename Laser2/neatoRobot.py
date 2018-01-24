@@ -27,7 +27,7 @@ class NeatoRobot:
         self.pose_queue = Queue()
         self.laser_queue = Queue()
         
-        self.viewer = http_viewer.HttpViewer(8004, self.laser_queue, self.pose_queue)
+        self.viewer = http_viewer.HttpViewer(8010, self.laser_queue, self.pose_queue)
         
         L_read, R_read = self.__get_motors()
         self.odometry = NeatoOdometry(L_read, R_read)
@@ -192,20 +192,78 @@ class NeatoRobot:
             comando = 'SetMotor LWheelDist ' + str(distancia_L) + ' RWheelDist ' + str(distancia_R) + ' Speed ' + str(self.speed * pow(-1, self.direction))
             #print(comando)
             self.enviaR(comando, 0.1)
-                
-    def followWal(self):
-        self.gotoWall()
+
+    def __followWal(self, right, angle):
+        angle_deg = math.fmod(angle, 2*math.pi)
+        angle_deg = (angle_deg/(2*math.pi))*360
+        angle_index = 0
+        if(angle_deg > 340 and angle_deg < 19):
+            angle_index = 0
+        else:
+            angle_deg = angle_deg - 19
+            angle_index = int(math.ceil(angle_deg/36))
+        
+        values = self.laser.get_laser()
+        threshold = 550
+        print("Angle index: ", angle_index)
+        if (values[angle_index%10] > threshold and values[(angle_index - 1)%10] > threshold and values[(angle_index + 1)%10] > threshold):
+            return False
+
+        if right:
+            side1 = values[8]
+            side2 = values[9]
+            sign = 1
+        else:
+            side1 = values[2]
+            side2 = values[1]
+            sign = -1
+        if values[0] < 600:
+            self.theta = sign * 3.141516/4
+            print("FRONT")
+            wall = True
+            print("Following wall now")
+        elif (side1 < 550 or side2 < 550):
+            wall = True
+            print("Following wall now")
+            if (side1 > 300 or side2 > 300):
+                self.theta =  sign * -3.141516/26
+                print("Turn right")
+            elif (side1 < 280 or side2 < 280):
+                self.theta = sign * 3.141516/26
+                print("Turn left")
+            else:
+                self.theta = 0
+        else:
+            wall = False
+        if(wall):
+            distancia_R = (((self.speed * pow(-1, self.direction) ) + (self.S * self.theta)) * self.tiempo) * pow(-1, self.direction)
+            distancia_L = (((self.speed * pow(-1, self.direction) ) + (-self.S * self.theta)) * self.tiempo) * pow(-1, self.direction)
+            comando = 'SetMotor LWheelDist ' + str(distancia_L) + ' RWheelDist ' + str(distancia_R) + ' Speed ' + str(self.speed * pow(-1, self.direction))
+            self.enviaR(comando, 0.1)
+        return wall
+
+
+    def followWal(self, right):
+        self.gotoWall(right)
         print("Following wall now")
         while True:
             values = self.laser.get_laser()
+            if right:
+                side1 = values[8]
+                side2 = values[9]
+                sign = 1
+            else:
+                side1 = values[2]
+                side2 = values[1]
+                sign = -1
             if values[0] < 650:
-                self.theta = 3.141516/4
+                self.theta = sign * 3.141516/4
                 print("FRONT")
-            elif (values[8] > 330 or values[9] > 330):
-                self.theta =  -3.141516/12
+            elif (side1 > 330 or side2 > 330):
+                self.theta =  sign * -3.141516/12
                 print("Turn right")
-            elif (values[8] < 300 or values[9] < 300):
-                self.theta = 3.141516/26
+            elif (side1 < 300 or side2 < 300):
+                self.theta = sign * 3.141516/26
                 print("Turn left")
             else:
                 self.theta = 0
@@ -214,7 +272,7 @@ class NeatoRobot:
             comando = 'SetMotor LWheelDist ' + str(distancia_L) + ' RWheelDist ' + str(distancia_R) + ' Speed ' + str(self.speed * pow(-1, self.direction))
             self.enviaR(comando, 0.1)
 
-    def gotoWall(self):
+    def gotoWall(self, right):
         print("Going to wall")
         values = self.laser.get_laser()
         while(values[0] > 750):
@@ -227,9 +285,29 @@ class NeatoRobot:
             values = self.laser.get_laser()
         print("Wall reached")
         values = self.laser.get_laser()
-        comando = 'SetMotor LWheelDist 0 RWheelDist ' + str(int(round((math.pi/2) * self.S))) + ' Speed ' + str(self.speed * pow(-1, self.direction))
+        if right:
+            comando = 'SetMotor LWheelDist 0 RWheelDist ' + str(int(round((math.pi/2) * self.S))) + ' Speed ' + str(self.speed * pow(-1, self.direction))
+        else: 
+            comando = 'SetMotor LWheelDist' +  str(int(round((math.pi/2) * self.S))) +  ' RWheelDist 0 Speed ' + str(self.speed * pow(-1, self.direction))
         self.enviaR(comando, 2)
-        
+
+    def exitMaze(self, x, y):
+        print("Escaping Maze")
+        L, R, angle = self.odometry.getGoToPoint(x, y)
+        while (L + R) > 0:
+            #while hi hagi paret seguim la paret, sino go to point. 
+            
+            if not self.__followWal(True, angle):
+                comando = 'SetMotor LWheelDist ' + str(L) + ' RWheelDist ' + str(R) + ' Speed ' + str(self.speed)
+                self.enviaR(comando, 0.1)
+
+            L_read, R_read = self.__get_motors()
+            self.odometry.updateOdometry(L_read, R_read)
+            L, R, angle = self.odometry.getGoToPoint(x, y)
+            
+        comando = 'SetMotor LWheelDist 0 RWheelDist 0 Speed 0'
+        self.enviaR(comando, 0.1)  
+
     def fuig_segueix(self, fuig):
         get_angle = self.__get_angle_fuig
         if fuig:
