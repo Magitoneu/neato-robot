@@ -24,10 +24,12 @@ class NeatoRobot:
         envia(self.ser, 'SetLDSRotation On', 4)
         self.laser = NeatoLaser(ser)
         
+        self.exit = False
+        
         self.pose_queue = Queue()
         self.laser_queue = Queue()
         
-        self.viewer = http_viewer.HttpViewer(8103, self.laser_queue, self.pose_queue)
+        self.viewer = http_viewer.HttpViewer(8002, self.laser_queue, self.pose_queue)
         
         L_read, R_read = self.__get_motors()
         self.odometry = NeatoOdometry(L_read, R_read)
@@ -36,7 +38,7 @@ class NeatoRobot:
         self.thread_odometry.start()
         
     def __odometry_queue(self):
-        while True:
+        while not self.exit:
             current_odometry = self.odometry.getTheoricPose()
             self.pose_queue.put([(current_odometry[0][0], current_odometry[1][0])])
             time.sleep(0.5)
@@ -50,21 +52,21 @@ class NeatoRobot:
         
     def Goto(self, x, y):
         print("Going to point")
-        L, R = self.odometry.getGoToPoint(x, y)
+        L, R, angle, d = self.odometry.getGoToPoint(x, y)
         
         while (L+R) > 0:
             comando = 'SetMotor LWheelDist ' + str(L) + ' RWheelDist ' + str(R) + ' Speed ' + str(self.speed)
             self.enviaR(comando, 0.1)
             L_read, R_read = self.__get_motors()
             self.odometry.updateOdometry(L_read, R_read)
-            L, R = self.odometry.getGoToPoint(x, y)
+            L, R, angle, d = self.odometry.getGoToPoint(x, y)
             
         comando = 'SetMotor LWheelDist 0 RWheelDist 0 Speed 0'
         self.enviaR(comando, 0.1)
         
     def GotoObstacles(self, x, y):
         print("Going to point without crashing")
-        L, R = self.odometry.getGoToPoint(x, y)
+        L, R, angle, d = self.odometry.getGoToPoint(x, y)
         
         while ((L+R) > 0):
             if not self.__esquiva():
@@ -73,7 +75,7 @@ class NeatoRobot:
 
             L_read, R_read = self.__get_motors()
             self.odometry.updateOdometry(L_read, R_read)
-            L, R = self.odometry.getGoToPoint(x, y)
+            L, R, angle, d = self.odometry.getGoToPoint(x, y)
             
         comando = 'SetMotor LWheelDist 0 RWheelDist 0 Speed 0'
         self.enviaR(comando, 0.1)   
@@ -277,6 +279,7 @@ class NeatoRobot:
         return buffer
         
     def stop(self):
+        self.exit = True
         self.thread_odometry.join()
         comando = 'SetMotor LWheelDist 0 RWheelDist 0 Speed 0'
         self.enviaR(comando, 0.1)

@@ -38,11 +38,9 @@ class HttpViewer(object):
         """ Start point of the thread that gets the laser points """
         print "Laser thread"
         laser_points = []
-        while True:
+        while not self.exit:
             new_points = self.laser_queue.get()
             laser_points.extend(new_points)
-
-	    print("LASER POINTS:", laser_points)
 
             if len(laser_points) > 1000:
                 laser_points = laser_points[360:]
@@ -55,7 +53,7 @@ class HttpViewer(object):
         """ Start point of the thread that gets the pose points. """
         print "Pose thread"
         pose_points = []
-        while True:
+        while not self.exit:
             new_points = self.pose_queue.get()
             pose_points.extend(new_points)
 
@@ -78,13 +76,20 @@ class HttpViewer(object):
         self.thread_pose.start()
         
         while not self.exit:
-            time.sleep(0.4)
+            try:
+                time.sleep(0.4)
+            except KeyboardInterrupt:
+                self.quit()
 
     def quit(self):
         """ Stops execution of the web server. """
         self.exit = True
         self.httpd.shutdown()
-        self.process.terminate()
+        self.thread.join()
+        self.thread_laser.join()
+        self.thread_pose.join()
+        time.sleep(0.5)
+        self.process.stop()
 
 def point_to_json(point, mm_per_pixel):
     print("POINT:", point)
@@ -96,7 +101,7 @@ def write_points_json(points, mm_per_pixel, type, filename):
 
     json_string = '{\n "'+type+'": ['
     for point in points:
-	print("Point:", point)
+        print("Point:", point)
         json_string += point_to_json(point, mm_per_pixel) + ',\n'
     json_string = json_string[:-2]
     json_string += ']\n}'
@@ -138,7 +143,3 @@ if __name__ == "__main__":
 
         n_laser += 360
         n_pose += 1
-
-
-
-
