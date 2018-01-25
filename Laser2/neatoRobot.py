@@ -195,11 +195,11 @@ class NeatoRobot:
         angle_deg = angle%(2*math.pi)
         angle_deg = (angle_deg/(2*math.pi))*360
         angle_index = 0
-        if(angle_deg > 340 and angle_deg < 19):
+        if(angle_deg > 340 or angle_deg < 19):
             angle_index = 0
         else:
             angle_deg = angle_deg - 19
-            angle_index = int(math.ceil(angle_deg/36))
+            angle_index = int(math.ceil(angle_deg/36.0))
         
         values = self.laser.get_laser()
         threshold = d
@@ -207,8 +207,8 @@ class NeatoRobot:
         print("Angle index: ", angle_index)
         print("Distance to reach: ", d)
         if (values[angle_index%10] > threshold and values[(angle_index - 1)%10] > threshold and values[(angle_index + 1)%10] > threshold):
+            print("IM GOIN TO THEE POINT!!!!!!!!!!!!!")
             return False
-
         if right:
             side1 = values[8]
             side2 = values[9]
@@ -222,19 +222,18 @@ class NeatoRobot:
             print("FRONT")
             wall = True
             print("Following wall now")
-        elif (side1 < 550 or side2 < 550):
+        else:
             wall = True
             print("Following wall now")
             if (side1 > 300 or side2 > 300):
-                self.theta =  sign * -3.141516/16
+                self.theta =  sign * -3.141516/12
                 print("Turn right")
             elif (side1 < 280 or side2 < 280):
-                self.theta = sign * 3.141516/16
+                self.theta = sign * 3.141516/12
                 print("Turn left")
             else:
                 self.theta = 0
-        else:
-            wall = False
+        
         if(wall):
             distancia_R = (((self.speed * pow(-1, self.direction) ) + (self.S * self.theta)) * self.tiempo) * pow(-1, self.direction)
             distancia_L = (((self.speed * pow(-1, self.direction) ) + (-self.S * self.theta)) * self.tiempo) * pow(-1, self.direction)
