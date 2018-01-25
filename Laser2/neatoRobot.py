@@ -29,7 +29,7 @@ class NeatoRobot:
         self.pose_queue = Queue()
         self.laser_queue = Queue()
         
-        self.viewer = http_viewer.HttpViewer(8002, self.laser_queue, self.pose_queue)
+        self.viewer = http_viewer.HttpViewer(8003, self.laser_queue, self.pose_queue)
         
         L_read, R_read = self.__get_motors()
         self.odometry = NeatoOdometry(L_read, R_read)
@@ -320,16 +320,20 @@ class NeatoRobot:
             self.theta, direct = get_angle(closer)
             print("Closer: ", closer)
             print("Angle: ", self.theta)
-            distancia_R = (((250 ) + (self.S * self.theta)) * self.tiempo) * pow(-1, direct)
-            distancia_L = (((250 ) + (-self.S * self.theta)) * self.tiempo) * pow(-1, direct)
+            distancia_R = (((250 ) + (self.S * self.theta)) * 10) * pow(-1, direct)
+            distancia_L = (((250 ) + (-self.S * self.theta)) * 10) * pow(-1, direct)
             print("RL: ", [distancia_R, distancia_L])
-            comando = 'SetMotor LWheelDist ' + str(distancia_L) + ' RWheelDist ' + str(distancia_R) + ' Speed ' + str(250)
+            comando = 'SetMotor LWheelDist ' + str(int(round(distancia_L))) + ' RWheelDist ' + str(int(round(distancia_R))) + ' Speed ' + str(250)
             print("Comando: ", comando)
             self.enviaR(comando, 0.5)
     
     def __get_angle_fuig(self, closer):
         if closer == 0 or closer == 9 or closer == 1:
             dir = 1
+            if closer == 9:
+                return (math.pi)/5, dir
+            elif closer == 1:
+                return -(math.pi)/5, dir
         else:
             dir = 0
         if closer == 0:
@@ -344,6 +348,10 @@ class NeatoRobot:
     def __get_angle_persegueix(self, closer):
         if closer == 5 or closer == 6 or closer == 4:
             dir = 1
+            if closer == 6:
+                return -(math.pi)/5, dir
+            elif closer == 4:
+                return (math.pi)/5, dir
         else:
             dir = 0
         if closer == 5:
