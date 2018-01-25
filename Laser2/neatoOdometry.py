@@ -79,7 +79,7 @@ class NeatoOdometry:
         distancia_R = ((self.speed + (self.S * angle)) * time)
         distancia_L = ((self.speed + (-self.S * angle)) * time)
         
-        return int(round(distancia_L)), int(round(distancia_R)), angle
+        return int(round(distancia_L)), int(round(distancia_R)), angle, distance
         
     def __angle_diff(self, a, b):
         return math.atan2(math.sin(a-b), math.cos(a-b))

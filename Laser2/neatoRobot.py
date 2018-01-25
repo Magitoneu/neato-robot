@@ -21,17 +21,13 @@ class NeatoRobot:
         envia(self.ser, 'TestMode On', 0.2)
         envia(self.ser, 'PlaySound 1', 0.2)
         envia(self.ser, "SetMotor LWheelEnable RWheelEnable", 0.2)
-        envia(self.ser, 'SetLDSRotation On', 4)
+        envia(self.ser, 'SetLDSRotation On', 2)
         self.laser = NeatoLaser(ser)
         
         self.pose_queue = Queue()
         self.laser_queue = Queue()
         
-<<<<<<< HEAD
-        self.viewer = http_viewer.HttpViewer(8006, self.laser_queue, self.pose_queue)
-=======
-        self.viewer = http_viewer.HttpViewer(8010, self.laser_queue, self.pose_queue)
->>>>>>> ec18f7003682b37353e3a8875bc7b1c1332d6736
+        self.viewer = http_viewer.HttpViewer(8001, self.laser_queue, self.pose_queue)
         
         L_read, R_read = self.__get_motors()
         self.odometry = NeatoOdometry(L_read, R_read)
@@ -87,7 +83,6 @@ class NeatoRobot:
         
         return (L, R)
         
-        #Just move without crash
     def __esquiva(self):
         dist_28 = 350
         #print(values)
@@ -145,7 +140,6 @@ class NeatoRobot:
             self.enviaR(comando, 0.4)
         return(esq)
     
-    #Just move without crash
     def random_path(self):
         print("Starting random path without crashing")
         while True:
@@ -197,8 +191,8 @@ class NeatoRobot:
             #print(comando)
             self.enviaR(comando, 0.1)
 
-    def __followWal(self, right, angle):
-        angle_deg = math.fmod(angle, 2*math.pi)
+    def __followWal(self, right, angle, d):
+        angle_deg = angle%(2*math.pi)
         angle_deg = (angle_deg/(2*math.pi))*360
         angle_index = 0
         if(angle_deg > 340 and angle_deg < 19):
@@ -208,8 +202,10 @@ class NeatoRobot:
             angle_index = int(math.ceil(angle_deg/36))
         
         values = self.laser.get_laser()
-        threshold = 550
+        threshold = d
+        print("Angle deg: ", angle_deg)
         print("Angle index: ", angle_index)
+        print("Distance to reach: ", d)
         if (values[angle_index%10] > threshold and values[(angle_index - 1)%10] > threshold and values[(angle_index + 1)%10] > threshold):
             return False
 
@@ -230,10 +226,10 @@ class NeatoRobot:
             wall = True
             print("Following wall now")
             if (side1 > 300 or side2 > 300):
-                self.theta =  sign * -3.141516/26
+                self.theta =  sign * -3.141516/16
                 print("Turn right")
             elif (side1 < 280 or side2 < 280):
-                self.theta = sign * 3.141516/26
+                self.theta = sign * 3.141516/16
                 print("Turn left")
             else:
                 self.theta = 0
@@ -245,7 +241,6 @@ class NeatoRobot:
             comando = 'SetMotor LWheelDist ' + str(distancia_L) + ' RWheelDist ' + str(distancia_R) + ' Speed ' + str(self.speed * pow(-1, self.direction))
             self.enviaR(comando, 0.1)
         return wall
-
 
     def followWal(self, right):
         self.gotoWall(right)
@@ -297,17 +292,14 @@ class NeatoRobot:
 
     def exitMaze(self, x, y):
         print("Escaping Maze")
-        L, R, angle = self.odometry.getGoToPoint(x, y)
-        while (L + R) > 0:
-            #while hi hagi paret seguim la paret, sino go to point. 
-            
-            if not self.__followWal(True, angle):
+        L, R, angle, d = self.odometry.getGoToPoint(x, y)
+        while (L + R) > 0:            
+            if not self.__followWal(True, angle, d):
                 comando = 'SetMotor LWheelDist ' + str(L) + ' RWheelDist ' + str(R) + ' Speed ' + str(self.speed)
                 self.enviaR(comando, 0.1)
-
             L_read, R_read = self.__get_motors()
             self.odometry.updateOdometry(L_read, R_read)
-            L, R, angle = self.odometry.getGoToPoint(x, y)
+            L, R, angle, d = self.odometry.getGoToPoint(x, y)
             
         comando = 'SetMotor LWheelDist 0 RWheelDist 0 Speed 0'
         self.enviaR(comando, 0.1)  
@@ -332,24 +324,32 @@ class NeatoRobot:
             self.enviaR(comando, 0.5)
     
     def __get_angle_fuig(self, closer):
-        if closer == 0:
-            return 0, 1
-        elif closer < 5:
-            return -math.pi + (closer * math.pi/5), 0
-        elif closer > 5:
-            return math.pi - (abs(closer - 8) * math.pi/5), 0
+        if closer == 0 or closer == 9 or closer == 1:
+            dir = 1
         else:
-            return 0, 0
+            dir = 0
+        if closer == 0:
+            return 0, dir 
+        elif closer < 5:
+            return -math.pi + (closer * math.pi/5), dir
+        elif closer > 5:
+            return math.pi - (abs(closer - 8) * math.pi/5), dir
+        else:
+            return 0, dir
             
     def __get_angle_persegueix(self, closer):
-        if closer == 5:
-            return 0, 1
-        elif closer > 0 and closer < 6:
-            return math.pi - (abs(closer-5) * math.pi/5), 0
-        elif closer > 5:
-            return -math.pi + (abs(closer-5) * math.pi/5), 0
+        if closer == 5 or closer == 6 or closer == 4:
+            dir = 1
         else:
-            return 0, 0
+            dir = 0
+        if closer == 5:
+            return 0, dir
+        elif closer > 0 and closer < 6:
+            return math.pi - (abs(closer-5) * math.pi/5), dir
+        elif closer > 5:
+            return -math.pi + (abs(closer-5) * math.pi/5), dir
+        else:
+            return 0, dir
 
     def enviaR(self, msg, t):
         buffer = envia(self.ser, msg, t)
