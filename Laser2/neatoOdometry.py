@@ -74,7 +74,7 @@ class NeatoOdometry:
         # print("Time: ", time)
         
         if (distance < 50):
-            return 0, 0
+            return 0, 0, 0, 0
         
         distancia_R = ((self.speed + (self.S * angle)) * time)
         distancia_L = ((self.speed + (-self.S * angle)) * time)
